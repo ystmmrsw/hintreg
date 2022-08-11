@@ -1,3 +1,15 @@
+#' Fit a normal interval regression model to interval data
+#'
+#' \code{intreg} fits a normal interval regression model to interval data.
+#' The dependent variable must be a factor representing J intervals,
+#' and the user must provide J - 1 thresholds.
+#'
+#' @param formula an object of class "formula".
+#' @param data a data.frame containing the variables in the model.
+#' @param start an optional vector of starting values for the parameters.
+#' @param weights an optional vector of weights.
+#' @param thresholds a vector of J - 1 thresholds when there are J intervals.
+#' @return an object of class "intreg"
 intreg <- function(formula, data, start, weights, thresholds) {
   mf      <- match.call(expand.dots = FALSE)
   m       <- match(c("formula", "data", "weights", "offset"), names(mf), 0)
@@ -103,7 +115,7 @@ summary.intreg <- function(lFit, correlation = FALSE, ...) {
   lFit
 }
 #' @export
-print.summary.intreg <- function(lFit, digits = max(3, .Options$digits - 3), stars = getOption("show.signif.stars"), ...) {
+print.summary.intreg <- function(lFit, digits = max(3, .Options$digits - 3), ...) {
   if (!is.null(lFit$call)) {
     cat("Call:\n")
     dput(lFit$call, control = NULL)
@@ -113,7 +125,7 @@ print.summary.intreg <- function(lFit, digits = max(3, .Options$digits - 3), sta
   cat("\nAIC:", format(-2 * lFit$logLik + 2 * lFit$edf, nsmall = 2))
   cat("\n")
   cat("\nParameters:\n")
-  printCoefmat(lFit$summary, digits = digits, signif.stars = stars, na.print = "NA", ...)
+  printCoefmat(lFit$summary, digits = digits, signif.stars = TRUE, na.print = "NA", ...)
   if (!is.null(lFit$correlation)) {
     cat("\nCorrelation of parameters:\n")
     mcorr                    <- format(round(lFit$correlation, digits))

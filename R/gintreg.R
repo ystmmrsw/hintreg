@@ -1,17 +1,35 @@
+#' Fit a generalized normal interval regression model to interval data
+#'
+#' \code{gintreg} fits a generalized normal interval regression model,
+#' i.e., a normal interval regression model with conditional heteroskedasticity,
+#' to interval data.
+#' The dependent variable must be a factor representing J intervals,
+#' and the user must provide J - 1 thresholds.
+#'
+#' @param location an object of class "formula"
+#' that specifies the equation for the conditional mean.
+#' @param scale an object of class "formula"
+#' that specifies the equation for the conditional standard deviation.
+#' @inheritParams intreg
+#' @return an object of class "gintreg"
 gintreg <- function(location, scale, data, start, weights, thresholds) {
   cl <- match.call(expand.dots = FALSE)
   m  <- match(c("location", "data", "weights", "offset"), names(cl), 0)
   mf <- cl[c(1, m)]
   names(mf)[names(mf) == "location"] <- "formula"
-  mf[[1]]  <- quote(model.frame)
-  mf       <- eval.parent(mf)
-  vy       <- model.response(mf)
+  mf[[1]] <- quote(model.frame)
+  mf      <- eval.parent(mf)
+  vy      <- model.response(mf)
+  if (!is.factor(vy)) stop("response must be a factor")
   mx       <- model.matrix(location, mf)
+  vw       <- model.weights(mf)
   voffsetL <- model.offset(mf)
   cn       <- length(vy)
   if (is.null(voffsetL)) voffsetL <- rep(0, cn)
   if (missing(scale)) {
-    mz <- matrix(1, cn, 1)
+    mz           <- matrix(1, cn, 1)
+    colnames(mz) <- "(Intercpet)"
+    voffsetS     <- rep(0, cn)
   } else {
     m  <- match(c("scale", "data", "weights", "offset"), names(cl), 0)
     mf <- cl[c(1, m)]
@@ -22,7 +40,6 @@ gintreg <- function(location, scale, data, start, weights, thresholds) {
     voffsetS <- model.offset(mf)
     if (is.null(voffsetS)) voffsetS <- rep(0, cn)
   }
-  vw      <- model.weights(mf)
   vthresh <- thresholds
   if (length(vthresh) != nlevels(vy) - 1) stop("incorrect number of thresholds")
   ck <- ncol(mx)
@@ -64,17 +81,17 @@ gintreg.fit <- function(vY, mX, mZ, vW, vOffsetL, vOffsetS, vThresh, vStart) {
   )
 }
 gintreg.loglikelihood <- function(vTheta, vY, mX, mZ, vW, vOffsetL, vOffsetS, vThresh) {
-  ck     <- ncol(mX)
-  cl     <- ncol(mZ)
-  vbeta  <- vTheta[seq_len(ck)]
-  vdelta <- vTheta[ck + seq_len(cl)]
-  vc     <- c(-Inf , vThresh, Inf)
-  vy     <- unclass(vY)
-  vmu    <- vOffsetL
-  if (ck > 0) vmu <- vmu + drop(mX %*% vbeta)
+  ck      <- ncol(mX)
+  cl      <- ncol(mZ)
+  vbeta   <- vTheta[seq_len(ck)]
+  vdelta  <- vTheta[ck + seq_len(cl)]
+  vmu     <- vOffsetL
   vlsigma <- vOffsetS
+  if (ck > 0) vmu <- vmu + drop(mX %*% vbeta)
   if (cl > 0) vlsigma <- vlsigma + drop(mZ %*% vdelta)
   vsigma <- exp(vlsigma)
+  vc     <- c(-Inf , vThresh, Inf)
+  vy     <- unclass(vY)
   vp     <- pnorm((vc[vy + 1] - vmu) / vsigma) - pnorm((vc[vy] - vmu) / vsigma)
   if (is.null(vW)) sum(log(vp)) else sum(vW * log(vp))
 }
@@ -97,7 +114,7 @@ print.gintreg <- function(lFit, ...) {
     cat("\nScale coefficients:\n")
     print(lFit$coefS, ...)
   } else {
-    cat("\nNo Scale coefficients\n")
+    cat("\nNo scale coefficients\n")
   }
   invisible(lFit)
 }
@@ -123,7 +140,7 @@ summary.gintreg <- function(lFit, correlation = FALSE, ...) {
   lFit
 }
 #' @export
-print.summary.gintreg <- function(lFit, digits = max(3, .Options$digits - 3), stars = getOption("show.signif.stars"), ...) {
+print.summary.gintreg <- function(lFit, digits = max(3, .Options$digits - 3), ...) {
   ck        <- length(lFit$coefL)
   cl        <- length(lFit$coefS)
   msummaryL <- lFit$summary[seq_len(ck), , drop = FALSE]
@@ -138,18 +155,18 @@ print.summary.gintreg <- function(lFit, digits = max(3, .Options$digits - 3), st
   cat("\n")
   if (ck > 0) {
     cat("\nLocation coefficients:\n")
-    printCoefmat(msummaryL, digits = digits, signif.stars = stars, na.print = "NA", ...)
+    printCoefmat(msummaryL, digits = digits, signif.stars = TRUE, signif.legend = FALSE, na.print = "NA", ...)
   } else {
     cat("\nNo location coefficients\n")
   }
   if (cl > 0) {
     cat("\nScale coefficients:\n")
-    printCoefmat(msummaryS, digits = digits, signif.stars = stars, na.print = "NA", ...)
+    printCoefmat(msummaryS, digits = digits, signif.stars = TRUE, signif.legend = TRUE, na.print = "NA", ...)
   } else {
-    cat("\nNo Scale coefficients\n")
+    cat("\nNo scale coefficients\n")
   }
   if (!is.null(lFit$correlation)) {
-    cat("\nCorrelation of Coefficients:\n")
+    cat("\nCorrelation of coefficients:\n")
     mcorr                    <- format(round(lFit$correlation, digits))
     mcorr[!lower.tri(mcorr)] <- ""
     print(mcorr[-1, -ncol(mcorr)], quote = FALSE, ...)

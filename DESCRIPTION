@@ -1,0 +1,20 @@
+Package: hintreg
+Title: ML estimation of a heterogenous normal interval regression model
+Version: 0.0.0.9000
+Authors@R: 
+    person("Yasutomo", "Murasawa", , "yasutomo.murasawa@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6716-0162"))
+Description: ML estimation of a heterogenous normal interval regression
+    model, i.e., a normal interval regression model with conditional
+    heteroskedasticity and heterogensou indifferece limens
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
