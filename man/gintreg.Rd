@@ -19,7 +19,7 @@ that specifies the equation for the conditional standard deviation.}
 
 \item{weights}{an optional vector of weights.}
 
-\item{thresholds}{a vector of J - 1 thresholds when there are J intervals.}
+\item{thresholds}{a vector of J thresholds when there are J + 1 intervals.}
 }
 \value{
 an object of class "gintreg"
@@ -28,6 +28,6 @@ an object of class "gintreg"
 \code{gintreg} fits a generalized normal interval regression model,
 i.e., a normal interval regression model with conditional heteroskedasticity,
 to interval data.
-The dependent variable must be a factor representing J intervals,
-and the user must provide J - 1 thresholds.
+The dependent variable must be a factor representing J + 1 intervals,
+and the user must provide J thresholds.
 }

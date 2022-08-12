@@ -47,7 +47,7 @@ an object of class "hintreg"
 to interval data with an indifference limen,
 i.e., a normal interval regression model with conditional heteroskedasticity
 and heterogeneous indifference limen.
-The dependent variable must be a factor representing J intervals,
+The dependent variable must be a factor representing J + 1 intervals,
 and the user must provide thresholds below and above 0, respectively,
-expect for an indifference limen (so there must be J - 3 known thresholds).
+expect for an indifference limen (so there must be J - 2 known thresholds).
 }

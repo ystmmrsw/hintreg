@@ -15,13 +15,13 @@ intreg(formula, data, start, weights, thresholds)
 
 \item{weights}{an optional vector of weights.}
 
-\item{thresholds}{a vector of J - 1 thresholds when there are J intervals.}
+\item{thresholds}{a vector of J thresholds when there are J + 1 intervals.}
 }
 \value{
 an object of class "intreg"
 }
 \description{
 \code{intreg} fits a normal interval regression model to interval data.
-The dependent variable must be a factor representing J intervals,
-and the user must provide J - 1 thresholds.
+The dependent variable must be a factor representing J + 1 intervals,
+and the user must provide J thresholds.
 }
