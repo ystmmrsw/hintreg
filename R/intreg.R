@@ -1,14 +1,14 @@
 #' Fit a normal interval regression model to interval data
 #'
 #' \code{intreg} fits a normal interval regression model to interval data.
-#' The dependent variable must be a factor representing J intervals,
-#' and the user must provide J - 1 thresholds.
+#' The dependent variable must be a factor representing J + 1 intervals,
+#' and the user must provide J thresholds.
 #'
 #' @param formula an object of class "formula".
 #' @param data a data.frame containing the variables in the model.
 #' @param start an optional vector of starting values for the parameters.
 #' @param weights an optional vector of weights.
-#' @param thresholds a vector of J - 1 thresholds when there are J intervals.
+#' @param thresholds a vector of J thresholds when there are J + 1 intervals.
 #' @return an object of class "intreg"
 intreg <- function(formula, data, start, weights, thresholds) {
   mf      <- match.call(expand.dots = FALSE)

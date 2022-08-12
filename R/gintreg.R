@@ -3,8 +3,8 @@
 #' \code{gintreg} fits a generalized normal interval regression model,
 #' i.e., a normal interval regression model with conditional heteroskedasticity,
 #' to interval data.
-#' The dependent variable must be a factor representing J intervals,
-#' and the user must provide J - 1 thresholds.
+#' The dependent variable must be a factor representing J + 1 intervals,
+#' and the user must provide J thresholds.
 #'
 #' @param location an object of class "formula"
 #' that specifies the equation for the conditional mean.
