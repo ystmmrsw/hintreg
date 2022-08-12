@@ -17,6 +17,7 @@
 #' @inheritParams intreg
 #' @inheritParams gintreg
 #' @return an object of class "hintreg"
+#' @export
 hintreg <- function(location, scale, lower, upper, data, start, weights, threshbelow, threshabove) {
   cl <- match.call(expand.dots = FALSE)
   m  <- match(c("location", "data", "weights", "offset"), names(cl), 0)
