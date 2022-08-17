@@ -1,8 +1,22 @@
 ---
-title: "hintreg-intro"
+title: "hintreg:
+  An R package for fitting a heterogeneous normal interval regression model
+  to interval data with an indifference limen"
+abstract: "Interval data with an indifference limen arise
+  when a survey asks about a *change* of a continuous variable
+  and the respondents choose from a set of given intervals including `no change'.
+  This vignette introduces **hintreg**,
+  an R package for fitting a heterogeneous normal interval regression model to such data.
+  The model allows for heterogeneity not only in the location and scale parameters,
+  but also in the lower and upper thresholds of the indifference limen,
+  thus reducing the risk of model misspecification.
+  An analysis of survey data on inflation expectations illustrates how to use the package."
+bibliography: hintreg.bib
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{hintreg-intro}
+  %\VignetteIndexEntry{hintreg:
+  An R package for fitting a heterogeneous normal interval regression model
+  to interval data with an indifference limen}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,6 +28,49 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+
+Survey questions about a continuous variable (e.g., income)
+often ask respondents to choose from a set of given intervals.
+Moreover,
+for questions about a *change* of a continuous variable
+(e.g., inflation, which is a change in the price level),
+the choice may include a category `no change'.
+This category does not literally mean a 0\% change,
+whose probability is 0 for a continuous random variable,
+but implies an *indifference limen*
+that allows for an unnoticeable small change.
+With known thresholds except for an indifference limen,
+interval data with an indifference limen
+differ from both interval and ordinal data.
+Standard econometric softwares such as gretl and Stata
+do not have commands to analyze such data easily.
+
+Conceptually,
+fitting a regression model to interval data with an indifference limen
+is straightforward.
+Just write down the likelihood function
+and maximize it with respect to the parameters.
+See @Murasawa13 for an example.^[
+@Murasawa20 applies a Bayesian method,
+assuming a normal mixture model.
+]
+One can also use an R package **oglmx** by @Carroll18
+to fit an ordered response model with some known thresholds
+(=interval regression model with some unknown thresholds),
+even allowing for conditional heteroskedasticity.
+However,
+**oglmx** does not allow for heterogenous thresholds.^[
+Some R packages for fitting an ordered response model
+allow for heterogenous thresholds;
+e.g., **hopit** by @Danko19 and **ordinal** by @Christensen19.
+Typically they do not allow for known thresholds;
+i.e., they cannot fit an interval regression model.
+]
+
+
 ```{r setup}
 library(hintreg)
 ```
+
+# References
