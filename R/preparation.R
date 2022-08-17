@@ -13,7 +13,7 @@ if (0) {
   usethis::use_gpl3_license()
   usethis::use_testthat(3)
   usethis::use_data_raw()
-  usethis::use_vignette("my-vignette")
+  usethis::use_vignette("hintreg-intro")
   usethis::use_git()
   usethis::create_github_token()
   gitcreds::gitcreds_set()
