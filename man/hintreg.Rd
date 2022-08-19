@@ -13,7 +13,9 @@ hintreg(
   start,
   weights,
   threshbelow,
-  threshabove
+  threshabove,
+  limenlb,
+  limenub
 )
 }
 \arguments{
@@ -38,6 +40,12 @@ that specifies the equation for the upper bound of the indifference limen.}
 \item{threshbelow}{a vector of thresholds below 0}
 
 \item{threshabove}{a vector of thresholds above 0}
+
+\item{limenlb}{numeric.
+A lower bound on the heterogeneous indifference limen not smaller than max(threshbelow).}
+
+\item{limenub}{numeric.
+An upper bound on the heterogeneous indifference limen not greater than min(threshabove).}
 }
 \value{
 an object of class "hintreg"
@@ -46,8 +54,9 @@ an object of class "hintreg"
 \code{hintreg} fits a heterogeneous normal interval regression model
 to interval data with an indifference limen,
 i.e., a normal interval regression model with conditional heteroskedasticity
-and heterogeneous indifference limen.
-The dependent variable must be a factor representing J + 1 intervals,
-and the user must provide thresholds below and above 0, respectively,
-expect for an indifference limen (so there must be J - 2 known thresholds).
+and a heterogeneous indifference limen.
+The dependent variable must be a factor representing J + 1 intervals.
+The user must provide thresholds below and above 0, respectively,
+expect for an indifference limen (so there must be J - 2 known thresholds),
+and lower and upper bounds on the heterogeneous indifference limen.
 }

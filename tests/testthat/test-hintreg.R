@@ -8,6 +8,8 @@ vC_u       <- 1:5
 #cCat       <- 18
 #vC_l       <- -5:-1
 #vC_u       <- 1:10
+dLimenlb   <- -1
+dLimenub   <- 1
 dBeta_0    <- 0
 vBeta_1    <- rep(1, cL - 1)
 dBeta_2    <- 2
@@ -57,7 +59,9 @@ logLik_hintreg <- function(location, scale) {
     scale,
     data        = mData,
     threshbelow = vC_l,
-    threshabove = vC_u
+    threshabove = vC_u,
+    limenlb     = dLimenlb,
+    limenub     = dLimenub
   )$logLik
 }
 test_that("compare loglikelihoods of oglmx and hintreg", {
@@ -71,7 +75,7 @@ test_that("compare loglikelihoods of oglmx and hintreg", {
 
 oglmx::oglmx(
   y ~ d + x,
-    ~ d + x,
+  ~ d + x,
   data        = mData,
   beta        = c(NA, NA, 2),
   delta       = c(NA, NA, 2),
@@ -79,17 +83,19 @@ oglmx::oglmx(
 ) |> summary()
 hintreg(
   y ~ d + offset(2 * x),
-    ~ d + offset(2 * x),
+  ~ d + offset(2 * x),
   data        = mData,
   threshbelow = vC_l,
-  threshabove = vC_u
+  threshabove = vC_u,
+  limenlb     = dLimenlb,
+  limenub     = dLimenub
 ) |> summary()
 
 # Use start value
 
 lout <- gintreg(
   y ~ d + x,
-    ~ d + x,
+  ~ d + x,
   data       = mData,
   thresholds = c(vC_l, -.5, .5, vC_u)
 )
@@ -99,18 +105,20 @@ vstart       <- c(vbeta, vdelta, -.5, .5)
 #vstart       <- c(vBeta, vDelta, -.5, .5)
 oglmx::oglmx(
   y ~ d + x,
-    ~ d + x,
+  ~ d + x,
   data        = mData,
   start       = vstart,
   threshparam = c(vC_l, NA, NA, vC_u)
 ) |> summary()
 hintreg(
   y ~ d + x,
-    ~ d + x,
+  ~ d + x,
   data        = mData,
   start       = vstart,
   threshbelow = vC_l,
-  threshabove = vC_u
+  threshabove = vC_u,
+  limenlb     = dLimenlb,
+  limenub     = dLimenub
 ) |> summary()
 
 # Use weights
@@ -118,28 +126,32 @@ hintreg(
 vW <- rexp(cN)
 oglmx::oglmx(
   y ~ d + x,
-    ~ d + x,
+  ~ d + x,
   data        = mData,
   weights     = vW,
   threshparam = c(vC_l, NA, NA, vC_u)
 ) |> summary()
 hintreg(
   y ~ d + x,
-    ~ d + x,
+  ~ d + x,
   data        = mData,
   weights     = vW,
   threshbelow = vC_l,
-  threshabove = vC_u
+  threshabove = vC_u,
+  limenlb     = dLimenlb,
+  limenub     = dLimenub
 ) |> summary()
 
 # Heterogenenous interval regression
 
 hintreg(
   y ~ d + x,
-    ~ d + x,
-    ~ d + x,
-    ~ d + x,
+  ~ d + x,
+  ~ d + x,
+  ~ d + x,
   data        = mData,
   threshbelow = vC_l,
-  threshabove = vC_u
+  threshabove = vC_u,
+  limenlb     = dLimenlb,
+  limenub     = dLimenub
 ) |> summary()

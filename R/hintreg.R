@@ -3,22 +3,39 @@
 #' \code{hintreg} fits a heterogeneous normal interval regression model
 #' to interval data with an indifference limen,
 #' i.e., a normal interval regression model with conditional heteroskedasticity
-#' and heterogeneous indifference limen.
-#' The dependent variable must be a factor representing J + 1 intervals,
-#' and the user must provide thresholds below and above 0, respectively,
-#' expect for an indifference limen (so there must be J - 2 known thresholds).
+#' and a heterogeneous indifference limen.
+#' The dependent variable must be a factor representing J + 1 intervals.
+#' The user must provide thresholds below and above 0, respectively,
+#' expect for an indifference limen (so there must be J - 2 known thresholds),
+#' and lower and upper bounds on the heterogeneous indifference limen.
 #'
 #' @param lower an object of class "formula"
-#' that specifies the equation for the lower bound of the indifference limen.
+#'   that specifies the equation for the lower bound of the indifference limen.
 #' @param upper an object of class "formula"
-#' that specifies the equation for the upper bound of the indifference limen.
+#'   that specifies the equation for the upper bound of the indifference limen.
 #' @param threshbelow a vector of thresholds below 0
 #' @param threshabove a vector of thresholds above 0
+#' @param limenlb numeric.
+#'   A lower bound on the heterogeneous indifference limen not smaller than max(threshbelow).
+#' @param limenub numeric.
+#'   An upper bound on the heterogeneous indifference limen not greater than min(threshabove).
 #' @inheritParams intreg
 #' @inheritParams gintreg
 #' @return an object of class "hintreg"
 #' @export
-hintreg <- function(location, scale, lower, upper, data, start, weights, threshbelow, threshabove) {
+hintreg <- function(
+    location,
+    scale,
+    lower,
+    upper,
+    data,
+    start,
+    weights,
+    threshbelow,
+    threshabove,
+    limenlb,
+    limenub
+) {
   cl <- match.call(expand.dots = FALSE)
   m  <- match(c("location", "data", "weights", "offset"), names(cl), 0)
   mf <- cl[c(1, m)]
@@ -76,6 +93,8 @@ hintreg <- function(location, scale, lower, upper, data, start, weights, threshb
   }
   vthresh <- c(threshbelow, NA, NA, threshabove)
   if (length(vthresh) != nlevels(vy) - 1) stop("incorrect number of thresholds")
+  dlimenlb <- limenlb
+  dlimenub <- limenub
   cbeta    <- ncol(mx)
   cdelta   <- ncol(mz)
   clambda  <- ncol(mu)
@@ -89,7 +108,10 @@ hintreg <- function(location, scale, lower, upper, data, start, weights, threshb
   } else {
     vstart <- start
   }
-  lout            <- hintreg.fit(vy, mx, mz, mu, mv, vw, voffsetL, voffsetS, voffsetLB, voffsetUB, vthresh, vstart)
+  lout <- hintreg.fit(
+    vy, mx, mz, mu, mv, vw,
+    voffsetL, voffsetS, voffsetLB, voffsetUB, vthresh, dlimenlb, dlimenub, vstart
+  )
   vtheta          <- lout$par
   mhess           <- lout$hessian
   vindex_beta     <- c(!logical(cbeta), logical(cdelta + clambda + cupsilon))
@@ -120,15 +142,25 @@ hintreg <- function(location, scale, lower, upper, data, start, weights, threshb
   class(lfit) <- "hintreg"
   lfit
 }
-hintreg.fit <- function(vY, mX, mZ, mU, mV, vW, vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, vStart) {
+hintreg.fit <- function(
+    vY, mX, mZ, mU, mV, vW,
+    vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub, vStart
+) {
   optim(
     vStart,
-    function(.) -hintreg.loglikelihood(., vY, mX, mZ, mU, mV, vW, vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh),
+    function(.) -hintreg.loglikelihood(
+      .,
+      vY, mX, mZ, mU, mV, vW,
+      vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub
+    ),
     method  = "BFGS",
     hessian = TRUE
   )
 }
-hintreg.loglikelihood <- function(vTheta, vY, mX, mZ, mU, mV, vW, vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh) {
+hintreg.loglikelihood <- function(
+    vTheta, vY, mX, mZ, mU, mV, vW,
+    vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub
+) {
   cn             <- length(vY)
   cbeta          <- ncol(mX)
   cdelta         <- ncol(mZ)
@@ -151,8 +183,8 @@ hintreg.loglikelihood <- function(vTheta, vY, mX, mZ, mU, mV, vW, vOffsetL, vOff
   if (clambda > 0) vlogit_l <- vlogit_l + drop(mU %*% vlambda)
   if (cupsilon > 0) vlogit_u <- vlogit_u + drop(mV %*% vupsilon)
   vsigma   <- exp(vlsigma)
-  vlimen_l <- -plogis(vlogit_l)
-  vlimen_u <- plogis(vlogit_u)
+  vlimen_l <- dLimenlb * plogis(vlogit_l)
+  vlimen_u <- dLimenub * plogis(vlogit_u)
   vthresh  <- vThresh
   vy       <- unclass(vY)
   vlower   <- numeric(cn)
@@ -236,8 +268,8 @@ print.summary.hintreg <- function(lFit, digits = max(3, .Options$digits - 3), ..
   vindex_upsilon <- c(logical(cbeta + cdelta + clambda), !logical(cupsilon))
   msummaryL      <- lFit$summary[vindex_beta, , drop = FALSE]
   msummaryS      <- lFit$summary[vindex_delta, , drop = FALSE]
-  msummaryLB     <- lFit$summary[vindex_lambda, , drop = FALSE]
-  msummaryUB     <- lFit$summary[vindex_upsilon, , drop = FALSE]
+  msummaryLower  <- lFit$summary[vindex_lambda, , drop = FALSE]
+  msummaryUpper  <- lFit$summary[vindex_upsilon, , drop = FALSE]
   if (!is.null(lFit$call)) {
     cat("Call:\n")
     dput(lFit$call, control = NULL)
@@ -260,13 +292,13 @@ print.summary.hintreg <- function(lFit, digits = max(3, .Options$digits - 3), ..
   }
   if (clambda > 0) {
     cat("\nLower bound coefficients:\n")
-    printCoefmat(msummaryLB, digits = digits, signif.stars = TRUE, signif.legend = FALSE, na.print = "NA", ...)
+    printCoefmat(msummaryLower, digits = digits, signif.stars = TRUE, signif.legend = FALSE, na.print = "NA", ...)
   } else {
-    cat("\nNo lower bound coefficients\n")
+    cat("\nNo lower threshold coefficients\n")
   }
   if (cupsilon > 0) {
-    cat("\nUpper bound coefficients:\n")
-    printCoefmat(msummaryUB, digits = digits, signif.stars = TRUE, signif.legend = TRUE, na.print = "NA", ...)
+    cat("\nUpper threshold coefficients:\n")
+    printCoefmat(msummaryUpper, digits = digits, signif.stars = TRUE, signif.legend = TRUE, na.print = "NA", ...)
   } else {
     cat("\nNo upper bound coefficients\n")
   }

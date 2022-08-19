@@ -1,5 +1,5 @@
 ---
-title: "hintreg:
+title: "**hintreg**:
   An R package for fitting a heterogeneous normal interval regression model
   to interval data with an indifference limen"
 abstract: "Interval data with an indifference limen arise
@@ -12,13 +12,17 @@ abstract: "Interval data with an indifference limen arise
   thus reducing the risk of model misspecification.
   An analysis of survey data on inflation expectations illustrates how to use the package."
 bibliography: hintreg.bib
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    number_sections: yes
+  rmarkdown::pdf_document:
+    number_sections: yes
 vignette: >
-  %\VignetteIndexEntry{hintreg:
   An R package for fitting a heterogeneous normal interval regression model
   to interval data with an indifference limen}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{**hintreg**:
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r, include = FALSE}
@@ -26,6 +30,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+```
+
+```{r setup, echo = FALSE}
+library(hintreg)
 ```
 
 # Introduction
@@ -68,9 +76,128 @@ Typically they do not allow for known thresholds;
 i.e., they cannot fit an interval regression model.
 ]
 
+This vignette introduces **hintreg**,
+an R package for fitting a heterogeneous normal interval regression model
+to interval data with an indifference limen.
+The model allows for heterogeneity
+not only in the location and scale parameters,
+but also in the lower and upper thresholds of the indifference limen.
+Allowing for heterogeneity in the indifference limen
+is not only interesting by itself,
+but also reduces the risk of model misspecification,
+which is important
+because for a nonlinear model such as an interval regression model,
+ignoring any kind of heterogeneity leads to inconsistency of the ML estimator.
 
-```{r setup}
+The vignette proceeds as follows.
+Section 2 defines a heterogeneous interval regression model
+with an indifference limen.
+Section 3 explains how to install **hintreg**
+and use its main function **hintreg()**.
+Section 4 analyzes survey data on inflation expectations
+to illustrate how to use **hintreg**.
+
+# Heterogeneous interval regression model with an indifference limen
+
+## Normal interval regression model
+
+Let $(y,X)$ be a $(1+k)$-variate random sample of size $n$,
+where $y_i$ is an ordered factor with $J+1$ levels.
+A *normal interval regression model* for $y_i$ given $x_i$
+is for $i=1,\dots,n$,
+\begin{align*}
+y_i
+& :=\begin{cases}
+0      & \text{if $c_0<y^*_i \le c_1$} \\
+\vdots & \\
+J      & \text{if $c_J<y^*_i \le c_{J+1}$} \\
+\end{cases} \\
+y^*_i|x_i
+& \sim N\left(x_i'\beta,\sigma^2\right)
+\end{align*}
+where we know $\{c_j\}$.
+This model is standard.
+One can use **intreg** command in gretl and Stata to fit this model.
+
+## Conditional heteroskedasticity
+
+A *generalized normal interval regression model*
+assumes a generalized normal linear regression model for $y^*_i$ given $x_i$,
+i.e., for $i=1,\dots,n$,
+\[y^*_i|x_i \sim N(x_i'\beta,\exp(2x_i'\delta))\]
+This model is also standard.
+One can use **intreg** command in Stata to fit this model.
+
+## Indifference limen
+
+Assume that for $i=1,\dots,n$,
+\begin{align*}
+y_i
+& :=\begin{cases}
+0      & \text{if $\gamma_0<y^*_i \le \gamma_1$} \\
+\vdots & \\
+J      & \text{if $\gamma_J<y^*_i \le \gamma_{J+1}$} \\
+\end{cases} \\
+y^*_i|x_i
+& \sim N(x_i'\beta,\exp(2x_i'\delta))
+\end{align*}
+where $\gamma_0<\dots<\gamma_l<0<\gamma_u<\dots<\gamma_{J+1}$
+and we know $\{\gamma_j\}$ except for $[\gamma_l,\gamma_u]$,
+which is an indifference limen.
+This model is not standard.
+However,
+one can use an R package **oglmx** to fit this model.
+
+## Heterogeneous indifference limen
+
+The indifference limen $[\gamma_l,\gamma_u]$ may differ across $i$.
+Assume that for $i=1,\dots,n$,
+\begin{align*}
+\gamma_{l,i}
+& :=\bar{\gamma}_l\Lambda(x_i'\lambda) \\
+\gamma_{u,i}
+& :=\bar{\gamma}_u\Lambda(x_i'\upsilon)
+\end{align*}
+where $\bar{\gamma}_l \in [\gamma_{l-1},0)$
+is a lower bound on $\{\gamma_{l,i}\}$,
+$\bar{\gamma}_u \in (0,\gamma_{u+1}]$
+is an upper bound on $\{\gamma_{u,i}\}$,
+and $\Lambda(.)$ is the logistic function.
+This model is not standard.
+We name it a *heterogeneous normal interval regression model*.
+One can use our R package **hintreg** to fit this model.
+
+# **hintreg** package
+
+## Installation
+
+**hintreg** is currently available from the author's repository on Github.
+To install a package from Github,
+it is convenient to use **install_github()** in **devtools**.
+So one can start using **hintreg** in the following four steps:
+
+1. install **devtools** from CRAN
+1. load and attach **devtools**
+1. install **hintreg** from Github
+1. load and attach **hintreg**
+
+or simply by running the following code:
+
+```{r, eval = FALSE}
+install.packages("devtools")
+library(devtools)
+install_github("ystmmrsw/hintreg")
 library(hintreg)
 ```
+
+## Available functions
+
+**hintreg** has only three functions:
+**intreg()**, **gintreg()**, and **hintreg()**.
+The fist two functions are not new.
+Given known thresholds,
+they fit normal and generalized normal interval regression models,
+respectively.
+Here we introduce our main function **hintreg()**.
 
 # References
