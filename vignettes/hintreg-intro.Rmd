@@ -22,6 +22,7 @@ vignette: >
   to interval data with an indifference limen}
   %\VignetteEncoding{UTF-8}
   %\VignetteIndexEntry{**hintreg**:
+  %\VignetteIndexEntry{**hintreg**:
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -46,12 +47,12 @@ for questions about a *change* of a continuous variable
 the choice may include a category `no change'.
 This category does not literally mean a 0\% change,
 whose probability is 0 for a continuous random variable,
-but implies an *indifference limen*
-that allows for an unnoticeable small change.
+but implies an *indifference limen*,
+which allows for an unnoticeable change.
 With known thresholds except for an indifference limen,
 interval data with an indifference limen
 differ from both interval and ordinal data.
-Standard econometric softwares such as gretl and Stata
+Standard econometric software packages such as gretl and Stata
 do not have commands to analyze such data easily.
 
 Conceptually,
@@ -72,7 +73,7 @@ However,
 Some R packages for fitting an ordered response model
 allow for heterogenous thresholds;
 e.g., **hopit** by @Danko19 and **ordinal** by @Christensen19.
-Typically they do not allow for known thresholds;
+They typically do not allow for known thresholds, however;
 i.e., they cannot fit an interval regression model.
 ]
 
@@ -91,13 +92,13 @@ ignoring any kind of heterogeneity leads to inconsistency of the ML estimator.
 
 The vignette proceeds as follows.
 Section 2 defines a heterogeneous interval regression model
-with an indifference limen.
+for interval data with an indifference limen.
 Section 3 explains how to install **hintreg**
 and use its main function **hintreg()**.
 Section 4 analyzes survey data on inflation expectations
 to illustrate how to use **hintreg**.
 
-# Heterogeneous interval regression model with an indifference limen
+# Heterogeneous interval regression model
 
 ## Normal interval regression model
 
@@ -126,7 +127,11 @@ assumes a generalized normal linear regression model for $y^*_i$ given $x_i$,
 i.e., for $i=1,\dots,n$,
 \[y^*_i|x_i \sim N(x_i'\beta,\exp(2x_i'\delta))\]
 This model is also standard.
-One can use **intreg** command in Stata to fit this model.
+One can use **intreg** command in Stata to fit this model.^[
+Following **intreg** command in Stata,
+we model conditional heteroskedasticity
+not in variance but in standard deviation.
+]
 
 ## Indifference limen
 
@@ -151,7 +156,7 @@ one can use an R package **oglmx** to fit this model.
 ## Heterogeneous indifference limen
 
 The indifference limen $[\gamma_l,\gamma_u]$ may differ across $i$.
-Assume that for $i=1,\dots,n$,
+Let for $i=1,\dots,n$,
 \begin{align*}
 \gamma_{l,i}
 & :=\bar{\gamma}_l\Lambda(x_i'\lambda) \\
@@ -199,5 +204,282 @@ Given known thresholds,
 they fit normal and generalized normal interval regression models,
 respectively.
 Here we introduce our main function **hintreg()**.
+
+**hintreg()** takes the following arguments:
+
+```{r, eval = FALSE}
+hintreg(
+  location,
+  scale,
+  lower,
+  upper,
+  data,
+  start,
+  weights,
+  threshbelow,
+  threshabove,
+  limenlb,
+  limenub
+)
+```
+
+Among these arguments,
+**data**, **start**, and **weights** are standard.
+So we do not discuss them here.
+
+The first four arguments are all formulas:
+
+**location**
+  : specifies the mean; e.g., **y ~ x**
+
+**scale**
+  : specifies the standard deviation; e.g., **~ x**
+
+**lower**
+  : specifies the lower threshold of the indifference limen; e.g., **~ x**
+
+**upper**
+  : specifies the upper threshold of the indifference limen; e.g., **~ x**
+
+The left-hand side of the formula in **location**
+is the dependent variable, which must be an ordered factor.
+The left-hand sides of the other formulas are empty.
+
+The last four arguments are parameters
+for the thresholds and the indifference limen:
+
+**threshbelow**
+  : is a vector of known thresholds below the indifference limen
+
+**threshabove**
+  : is a vector of known thresholds above the indifference limen
+  
+**limenlb**
+  : is a lower bound on the heterogeneous indifference limen
+
+**limenub**
+  : is an upper bound on the heterogeneous indifference limen
+
+If the dependent variable has $J+1$ levels,
+so that there are $J$ thresholds,
+then excluding the thresholds of the indifference limen,
+there must be $J-2$ elements
+in **threshbelow** and **threshabove** (one of them can be null).
+If not null,
+the elements in **threshbelow** must be negative,
+and those in **threshabove** must be positive,
+both in the increasing order.
+Identification requires that $J \ge 4$.
+Since thresholds are in the increasing order,
+**limenlb** must be negative and no less than **max(threshbelow)**,
+and **limenub** must be positive
+and no greater than **min(threshabove)**.
+
+Internally,
+**hintreg()** fits the model by the ML method using **optim()**,
+where we use the BFGS method and numerical derivatives for the gradients.
+
+# An illustration
+
+## Survey data on inflation expectations
+
+**hintreg** has a data set **ias2009febmay**
+taken from the Bank of England Inflation Attitudes Survey.^[
+The data set of the Inflation Attitudes Survey is available
+at <https://www.bankofengland.co.uk/statistics/research-datasets>.
+]
+This data set allows us to replicate a result
+in @Blanchflower09,
+who study the formation of public inflation expectations in the UK.
+
+The Inflation Attitudes Survey is a quarterly survey
+starting from February 2001,
+and collects a quota sample of adults throughout the UK.
+The quota is 4,000 in February and 2,000 in May, August, and November.
+The survey asks both inflation perceptions and expectations,
+and the respondents choose from the following eight intervals
+(excluding `No idea'):
+
+1. Gone/Go down
+1. Not changed/change (indifference limen)
+1. Up by 1\% or less
+1. Up by 1\% but less than 2\%
+1. Up by 2\% but less than 3\%
+1. Up by 3\% but less than 4\%
+1. Up by 4\% but less than 5\%
+1. Up by 5\% or more
+
+Thus we have interval data with an indifference limen.
+
+The survey dates and variables in **ias2009febmay** are just enough
+to replicate Table 3, column (3) in @Blanchflower09.
+One can check all variables in the data set by simply summarizing it:
+
+```{r}
+summary(ias2009febmay)
+```
+
+## Normal interval regression model
+
+@Blanchflower09 implicitly assume
+that the indifference limen is $[-.5,.5]$,
+and fit a normal interval regression model
+to interval data on inflation expectations.
+Since **hintreg()** assumes unknown thresholds for the indifference limen,
+we cannot use **hintreg()** here.
+Using **intreg()** instead,
+one can replicate Table 3, column (3) in @Blanchflower09
+as follows:
+
+```{r}
+intreg(
+  q2 ~ age + work + sex + educ + tenure,
+  data       = ias2009febmay,
+  thresholds = c(-.5, .5, 1, 2, 3, 4, 5)
+) |> summary()
+```
+
+We want to extend this model by allowing for conditional heteroskedasticity,
+an indifference limen, and a heterogeneous indifference limen.
+As an illustration, however,
+ML estimation takes too much time for the last case.
+So we use **sex** as the only explanatory variable;
+i.e., we look at the gender gap in inflation expectations
+without controlling for other variables.^[
+Of course,
+interested readers can try including more explanatory variables by themselves.
+]
+
+```{r}
+lout <- intreg(
+  q2 ~ sex,
+  data       = ias2009febmay,
+  thresholds = c(-.5, .5, 1, 2, 3, 4, 5)
+)
+summary(lout)
+```
+
+## Generalized normal interval regression model
+
+Now we allow for conditional heteroskedasticity.
+Since the likelihood function may no longer be unimodal,
+it is a good idea to choose the starting values for the parameters carefully,
+though the default starting values may work.
+Here we set the starting values as follows:
+
+conditional mean equation
+  : use the estimated coefficients in a normal interval regression model
+
+conditional standard deviation equation
+  : use the estimated log standard deviation of the error term
+  in a normal interval regression model as the intercept;
+  set the other coefficients to 0
+
+One can implement this procedure as follows:
+
+```{r}
+vstart_beta  <- coef(lout)
+ck           <- length(vstart_beta)
+vstart_delta <- c(lout$logscale, numeric(ck - 1))
+vstart       <- c(vstart_beta, vstart_delta)
+```
+
+Since **hintreg()** assumes unknown thresholds for the indifference limen,
+we cannot use **hintreg()** here.
+Using **gintreg()** instead,
+we can fit a generalized normal interval regression model to interval data
+as follows:
+
+```{r}
+lout <- gintreg(
+  q2 ~ sex,
+     ~ sex,
+  data       = ias2009febmay,
+  start      = vstart,
+  thresholds = c(-.5, .5, 1, 2, 3, 4, 5)
+)
+summary(lout)
+```
+
+## Estimating the indifference limen
+
+@Blanchflower09 implicitly assume
+that the indifference limen is $[\gamma_l,\gamma_u]:=[-.5,.5]$.
+We can use **hintreg()** to estimate $[\gamma_l,\gamma_u]$
+by allowing the threshold equations to have only intercepts.
+Here we set the starting values as follows:
+
+conditional mean equation
+  : use the estimated coefficients for the conditional mean equation
+  in a generalized normal interval regression model
+
+conditional standard deviation equation
+  : use the estimated coefficients for the conditional standard deviation equation
+  in a generalized normal interval regression model
+
+thresholds
+  : set the intercepts to 0,
+  meaning that the starting values for $\gamma_l$ and $\gamma_u$
+  are $\bar{\gamma}_l/2$ and $\bar{\gamma}_h/2$, respectively
+
+One can implement this procedure as follows:
+
+```{r}
+vstart_beta  <- lout$coefL
+vstart_delta <- lout$coefS
+vstart_gamma <- numeric(2)
+vstart       <- c(vstart_beta, vstart_delta, vstart_gamma)
+```
+
+We can fit a heterogenous normal interval regression model
+to interval data with an indifference limen as follows:
+
+```{r}
+lout <- hintreg(
+  q2 ~ sex,
+     ~ sex,
+     ~ 1,
+     ~ 1,
+  data        = ias2009febmay,
+  start       = vstart,
+  threshbelow = NULL,
+  threshabove = 1:5,
+  limenlb     = -1,
+  limenub     = 1
+)
+summary(lout)
+```
+
+## Heterogenous normal interval regression model
+
+Finally, we allow for a heterogeneous indifference limen.
+Here we set the starting values as follows:
+
+```{r}
+vstart_beta  <- lout$coefL
+vstart_delta <- lout$coefS
+ck           <- length(vstart_beta)
+vstart_lower <- c(lout$coefLower, numeric(ck - 1))
+vstart_upper <- c(lout$coefUpper, numeric(ck - 1))
+vstart       <- c(vstart_beta, vstart_delta, vstart_lower, vstart_upper)
+```
+
+We can fit a heterogenous normal interval regression model
+to interval data with an indifference limen as follows:
+
+```{r}
+hintreg(
+  q2 ~ sex,
+     ~ sex,
+     ~ sex,
+     ~ sex,
+  data        = ias2009febmay,
+  start       = vstart,
+  threshbelow = NULL,
+  threshabove = 1:5,
+  limenlb     = -1,
+  limenub     = 1
+) |> summary()
+```
 
 # References

@@ -24,17 +24,17 @@
 #' @return an object of class "hintreg"
 #' @export
 hintreg <- function(
-    location,
-    scale,
-    lower,
-    upper,
-    data,
-    start,
-    weights,
-    threshbelow,
-    threshabove,
-    limenlb,
-    limenub
+  location,
+  scale,
+  lower,
+  upper,
+  data,
+  start,
+  weights,
+  threshbelow,
+  threshabove,
+  limenlb,
+  limenub
 ) {
   cl <- match.call(expand.dots = FALSE)
   m  <- match(c("location", "data", "weights", "offset"), names(cl), 0)
@@ -143,8 +143,8 @@ hintreg <- function(
   lfit
 }
 hintreg.fit <- function(
-    vY, mX, mZ, mU, mV, vW,
-    vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub, vStart
+  vY, mX, mZ, mU, mV, vW,
+  vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub, vStart
 ) {
   optim(
     vStart,
@@ -158,8 +158,8 @@ hintreg.fit <- function(
   )
 }
 hintreg.loglikelihood <- function(
-    vTheta, vY, mX, mZ, mU, mV, vW,
-    vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub
+  vTheta, vY, mX, mZ, mU, mV, vW,
+  vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub
 ) {
   cn             <- length(vY)
   cbeta          <- ncol(mX)
@@ -291,7 +291,7 @@ print.summary.hintreg <- function(lFit, digits = max(3, .Options$digits - 3), ..
     cat("\nNo scale coefficients\n")
   }
   if (clambda > 0) {
-    cat("\nLower bound coefficients:\n")
+    cat("\nLower threshold coefficients:\n")
     printCoefmat(msummaryLower, digits = digits, signif.stars = TRUE, signif.legend = FALSE, na.print = "NA", ...)
   } else {
     cat("\nNo lower threshold coefficients\n")
@@ -300,7 +300,7 @@ print.summary.hintreg <- function(lFit, digits = max(3, .Options$digits - 3), ..
     cat("\nUpper threshold coefficients:\n")
     printCoefmat(msummaryUpper, digits = digits, signif.stars = TRUE, signif.legend = TRUE, na.print = "NA", ...)
   } else {
-    cat("\nNo upper bound coefficients\n")
+    cat("\nNo upper threshold coefficients\n")
   }
   if (!is.null(lFit$correlation)) {
     cat("\nCorrelation of coefficients:\n")
