@@ -28,9 +28,11 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+options(width = 100)
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  out.width = '100%'
 )
 ```
 
@@ -298,7 +300,7 @@ The data set of the Inflation Attitudes Survey is available
 at <https://www.bankofengland.co.uk/statistics/research-datasets>.
 ]
 This data set allows us to replicate a result
-in @Blanchflower09,
+in @Blanchflower-MacCoille09,
 who study the formation of public inflation expectations in the UK.
 
 The Inflation Attitudes Survey is a quarterly survey
@@ -321,7 +323,7 @@ and the respondents choose from the following eight intervals
 So we have interval data with an indifference limen (choice 2).
 
 The survey dates and variables in **ias2009febmay** are just enough
-to replicate Table 3, column (3) in @Blanchflower09.
+to replicate Table 3, column (3) in @Blanchflower-MacCoille09.
 One can check the variables in the data set by summarizing it:
 
 ```{r}
@@ -332,7 +334,7 @@ The variable **q2** is the respondent's answer
 to the question about inflation expectation over the next 12 months.
 One can visualize its distribution among the respondents using a bar chart:
 
-```{r out.width = '100%'}
+```{r}
 ggplot(ias2009febmay) +
   geom_bar(aes(x = q2)) +
   coord_flip()
@@ -340,14 +342,14 @@ ggplot(ias2009febmay) +
 
 ## Normal interval regression model
 
-@Blanchflower09 implicitly assume
+@Blanchflower-MacCoille09 implicitly assume
 that the indifference limen is $[-.5,.5]$,
-and fit a normal interval regression model
+and fit normal interval regression models
 to interval data on inflation expectations.
 Since **hintreg()** assumes unknown thresholds for the indifference limen,
 we cannot use **hintreg()** here.
 Using **intreg()** instead,
-one can replicate Table 3, column (3) in @Blanchflower09
+one can replicate Table 3, column (3) in @Blanchflower-MacCoille09
 as follows:
 
 ```{r}
@@ -358,12 +360,13 @@ intreg(
 ) |> summary()
 ```
 
-We want to extend this model by allowing for conditional heteroskedasticity,
-an indifference limen, and a heterogeneous indifference limen.
-As an illustration, however,
-ML estimation takes too much time for the last case.
-So we use **sex** as the only explanatory variable;
-i.e., we look at the gender gap in inflation expectations
+We want to introduce conditional heteroskedasticity
+and a heterogeneous indifference limen into this model.
+However,
+ML estimation of such a general model with many explanatory variables
+takes too much time for an illustration.
+So we include only **sex** as an explanatory variable below;
+i.e., we measure a gender gap in inflation expectations
 without controlling for other variables.^[
 Of course,
 interested readers can try including more explanatory variables by themselves.
@@ -378,18 +381,22 @@ lout <- intreg(
 summary(lout)
 ```
 
+We find that for the UK in February and May 2009,
+men on average had significantly lower inflation expectations than women
+by about .2\%.
+
 ## Generalized normal interval regression model
 
-Now we allow for conditional heteroskedasticity.
+Now we introduce conditional heteroskedasticity.
 Since the likelihood function may no longer be unimodal,
-it is a good idea to choose the starting values for the parameters carefully,
+one should choose the starting values for the parameters carefully,
 though the default starting values may work.
 Here we set the starting values as follows:
 
-conditional mean equation
+mean equation
   : use the estimated coefficients in a normal interval regression model
 
-conditional standard deviation equation
+standard deviation equation
   : use the estimated log standard deviation of the error term
   in a normal interval regression model as the intercept;
   set the other coefficients to 0
@@ -420,20 +427,24 @@ lout <- gintreg(
 summary(lout)
 ```
 
+We find that for the UK in February and May 2009,
+the standard deviations of inflation expectations among men and women
+were not significantly different.
+
 ## Estimating the indifference limen
 
-@Blanchflower09 implicitly assume
+@Blanchflower-MacCoille09 implicitly assume
 that the indifference limen is $[\gamma_l,\gamma_u]:=[-.5,.5]$.
 We can use **hintreg()** to estimate $[\gamma_l,\gamma_u]$
-by allowing the threshold equations to have only intercepts.
+by restricting the threshold equations to have only intercepts.
 Here we set the starting values as follows:
 
-conditional mean equation
-  : use the estimated coefficients for the conditional mean equation
+mean equation
+  : use the estimated coefficients for the mean equation
   in a generalized normal interval regression model
 
-conditional standard deviation equation
-  : use the estimated coefficients for the conditional standard deviation equation
+standard deviation equation
+  : use the estimated coefficients for the standard deviation equation
   in a generalized normal interval regression model
 
 thresholds
@@ -450,6 +461,11 @@ vstart_gamma <- numeric(2)
 vstart       <- c(vstart_beta, vstart_delta, vstart_gamma)
 ```
 
+The vectors of known thresholds below and above the indifference limen
+are null and $(1,\dots,5)$, respectively.
+It is natural to set $\bar{\gamma}_h:=1$.
+By symmetry, we set $\bar{\gamma}_l:=-1$,
+though it can be any negative number.
 We can fit a heterogeneous normal interval regression model
 to interval data with an indifference limen as follows:
 
@@ -469,10 +485,65 @@ lout <- hintreg(
 summary(lout)
 ```
 
+We find the following (for the UK in February and May 2009):
+
+1. The intercept for the lower threshold is large
+but not significantly different from 0,
+meaning that $\hat{\gamma}_l$ is close to $-1$
+but we cannot reject $H_0:\gamma_l=-.5$.
+1. The intercept for the upper threshold is significantly larger than 0,
+meaning that we reject $H_0:\gamma_u=.5$ in favor of $H_1:\gamma_u>.5$.
+
+Since $\hat{\gamma}_l \approx -1$,
+setting $\bar{\gamma}_l:=-1$ may be restrictive.
+So we set $\bar{\gamma}_l:=-2$ and reestimate the model.
+
+```{r}
+lout <- hintreg(
+  q2 ~ sex,
+     ~ sex,
+     ~ 1,
+     ~ 1,
+  data        = ias2009febmay,
+  start       = vstart,
+  threshbelow = NULL,
+  threshabove = 1:5,
+  limenlb     = -2,
+  limenub     = 1
+)
+summary(lout)
+```
+
+Now we find the following (for the UK in February and May 2009):
+
+1. The intercept for the lower threshold is positive
+but not significantly different from 0,
+meaning that $\hat{\gamma}_l<-1$ but we cannot reject $H_0:\gamma_l=-1$.
+1. The intercept for the upper threshold
+is not significantly different from 0,
+meaning that we can no longer reject $H_0:\gamma_u=.5$.
+
 ## Heterogeneous normal interval regression model
 
-Finally, we allow for a heterogeneous indifference limen.
+Finally,
+we introduce heterogeneity into the indifference limen.
 Here we set the starting values as follows:
+
+mean equation
+  : use the estimated coefficients for the mean equation
+  in a generalized normal interval regression model with an indifference limen
+
+standard deviation equation
+  : use the estimated coefficients for the standard deviation equation
+  in a generalized normal interval regression model with an indifference limen
+
+threshold equations
+  : use the estimated thresholds
+  in a generalized normal interval regression model with an indifference limen
+  as the intercepts;
+  set the other coefficients to 0
+
+One can implement this procedure as follows:
 
 ```{r}
 vstart_beta  <- lout$coefL
@@ -483,7 +554,9 @@ vstart_upper <- c(lout$coefUpper, numeric(ck - 1))
 vstart       <- c(vstart_beta, vstart_delta, vstart_lower, vstart_upper)
 ```
 
-We can fit a heterogeneous normal interval regression model
+Since $\hat{\gamma}_l<-1$ in the previous result,
+we set $\bar{\gamma}_l:=-2$,
+and fit a heterogeneous normal interval regression model
 to interval data with an indifference limen as follows:
 
 ```{r}
@@ -496,9 +569,19 @@ hintreg(
   start       = vstart,
   threshbelow = NULL,
   threshabove = 1:5,
-  limenlb     = -1,
+  limenlb     = -2,
   limenub     = 1
 ) |> summary()
 ```
+
+We find the following (for the UK in February and May 2009):
+
+1. The intercepts for the lower and upper thresholds
+are significantly larger than 0,
+meaning that we reject $H_0:\gamma_l=-1$ and $H_0:\gamma_u=.5$
+in favor of $H_1:\gamma_l<-1$ and $H_1:\gamma_u>.5$, respectively,
+at least for women.
+2. The indifference limens for men and women
+are not significantly different.
 
 # References
