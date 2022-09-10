@@ -88,9 +88,11 @@ oglmx::oglmx(
   weights     = vW,
   threshparam = vC
 ) |> summary()
-intreg(
+lout <- intreg(
   y ~ d + x,
   data       = mData,
   weights    = vW,
   thresholds = vC
-) |> summary()
+)
+summary(lout)
+tidy(lout, TRUE)

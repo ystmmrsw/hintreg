@@ -17,4 +17,8 @@ if (0) {
   usethis::create_github_token()
   gitcreds::gitcreds_set()
   usethis::use_github()
+  usethis::use_package("generics", "Imports")
 }
+#' @importFrom generics tidy
+#' @export
+generics::tidy
