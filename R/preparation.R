@@ -19,6 +19,3 @@ if (0) {
   usethis::use_github()
   usethis::use_package("generics", "Imports")
 }
-#' @importFrom generics tidy
-#' @export
-generics::tidy
