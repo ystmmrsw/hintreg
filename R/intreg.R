@@ -10,6 +10,12 @@
 #' @param weights an optional vector of weights.
 #' @param thresholds a vector of J thresholds when there are J + 1 intervals.
 #' @return an object of class "intreg"
+#' @examples
+#' intreg(
+#'   q2 ~ sex,
+#'   data       = ias2009febmay,
+#'   thresholds = c(-.5, .5, 1:5)
+#' )
 #' @export
 intreg <- function(formula, data, start, weights, thresholds) {
   mf      <- match.call(expand.dots = FALSE)

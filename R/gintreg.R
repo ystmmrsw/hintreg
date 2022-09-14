@@ -12,6 +12,13 @@
 #' that specifies the equation for the conditional standard deviation.
 #' @inheritParams intreg
 #' @return an object of class "gintreg"
+#' @examples
+#' gintreg(
+#'   q2 ~ sex,
+#'      ~ sex,
+#'   data       = ias2009febmay,
+#'   thresholds = c(-.5, .5, 1:5)
+#' )
 #' @export
 gintreg <- function(location, scale, data, start, weights, thresholds) {
   cl <- match.call(expand.dots = FALSE)

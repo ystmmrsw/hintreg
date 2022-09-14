@@ -25,3 +25,10 @@ an object of class "intreg"
 The dependent variable must be a factor representing J + 1 intervals,
 and the user must provide J thresholds.
 }
+\examples{
+intreg(
+  q2 ~ sex,
+  data       = ias2009febmay,
+  thresholds = c(-.5, .5, 1:5)
+)
+}

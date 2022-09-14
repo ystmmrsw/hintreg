@@ -107,10 +107,12 @@ oglmx::oglmx(
   weights     = vW,
   threshparam = vC
 ) |> summary()
-gintreg(
+lout <- gintreg(
   y ~ d + x,
     ~ d + x,
   data       = mData,
   weights    = vW,
   thresholds = vC
-) |> summary()
+)
+summary(lout)
+tidy(lout, TRUE)
