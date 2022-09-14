@@ -1,7 +1,14 @@
 ---
 title: "**hintreg**:
   An R package for fitting a heterogeneous normal interval regression model
-  to interval data with an indifference limen"
+  to interval data with an indifference limen^[
+  This package was developed during my research visit
+  at the Department of International Business, National Chengchi University,
+  in the summer of 2022.
+  I thank Natsuki Arai and Biing-Shen Kuo for their hospitality and support,
+  and Konan University for funding the visit.
+  This work was also supported by JSPS KAKENHI Grant Number JP21K01434.
+  ]"
 abstract: "Interval data with an indifference limen arise
   when a survey asks about a *change* of a continuous variable
   and the respondents choose from a set of given intervals including `no change'.
@@ -13,17 +20,17 @@ abstract: "Interval data with an indifference limen arise
   An analysis of survey data on inflation expectations illustrates how to use the package."
 bibliography: hintreg.bib
 output:
+  rmarkdown::pdf_document:
+    number_sections: yes
   rmarkdown::html_vignette:
     number_sections: yes
     toc: yes
-  rmarkdown::pdf_document:
-    number_sections: yes
+papersize: a4
 vignette: >
+  %\VignetteIndexEntry{**hintreg**:
   An R package for fitting a heterogeneous normal interval regression model
   to interval data with an indifference limen}
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{**hintreg**:
-  %\VignetteIndexEntry{**hintreg**:
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -356,7 +363,7 @@ as follows:
 intreg(
   q2 ~ age + work + sex + educ + tenure,
   data       = ias2009febmay,
-  thresholds = c(-.5, .5, 1, 2, 3, 4, 5)
+  thresholds = c(-.5, .5, 1:5)
 ) |> summary()
 ```
 
@@ -376,7 +383,7 @@ interested readers can try including more explanatory variables by themselves.
 lout <- intreg(
   q2 ~ sex,
   data       = ias2009febmay,
-  thresholds = c(-.5, .5, 1, 2, 3, 4, 5)
+  thresholds = c(-.5, .5, 1:5)
 )
 summary(lout)
 ```
@@ -422,7 +429,7 @@ lout <- gintreg(
      ~ sex,
   data       = ias2009febmay,
   start      = vstart,
-  thresholds = c(-.5, .5, 1, 2, 3, 4, 5)
+  thresholds = c(-.5, .5, 1:5)
 )
 summary(lout)
 ```
