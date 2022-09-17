@@ -144,7 +144,7 @@ hintreg(
 
 # Heterogenenous interval regression
 
-hintreg(
+lout <- hintreg(
   y ~ d + x,
   ~ d + x,
   ~ d + x,
@@ -154,4 +154,6 @@ hintreg(
   threshabove = vC_u,
   limenlb     = dLimenlb,
   limenub     = dLimenub
-) |> summary()
+)
+summary(lout)
+tidy(lout, TRUE)

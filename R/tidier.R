@@ -69,7 +69,10 @@ tidy.gintreg <- function(lFit, conf.int = FALSE, conf.level = .95, ...) {
       p.value   = `Pr(>|t|)`
     )
   msummary <- tibble::tibble(
-    coef.type = c(rep("location", length(lFit$coefL)), rep("scale", length(lFit$coefS))),
+    coef.type = c(
+      rep("location", length(lFit$coefL)),
+      rep("scale", length(lFit$coefS))
+    ),
     msummary
   )
   if (conf.int) {
@@ -79,15 +82,80 @@ tidy.gintreg <- function(lFit, conf.int = FALSE, conf.level = .95, ...) {
   msummary
 }
 confint.gintreg <- function(lFit, level = .95, ...) {
-  vbeta     <- lFit$coefL
-  vdelta    <- lFit$coefS
-  mhess     <- lFit$hess
-  vpar      <- c(vbeta, vdelta)
-  mcov      <- solve(mhess)
-  vse       <- sqrt(diag(mcov))
-  dalpha    <- (1 - level) / 2
+  vbeta  <- lFit$coefL
+  vdelta <- lFit$coefS
+  mhess  <- lFit$hess
+  vpar   <- c(vbeta, vdelta)
+  mcov   <- solve(mhess)
+  vse    <- sqrt(diag(mcov))
+  dalpha <- (1 - level) / 2
   tibble::tibble(
-    coef.type = c(rep("location", length(vbeta)), rep("scale", length(vdelta))),
+    coef.type = c(
+      rep("location", length(lFit$coefL)),
+      rep("scale", length(lFit$coefS))
+    ),
+    term      = names(vpar),
+    conf.low  = vpar + qnorm(dalpha) * vse,
+    conf.high = vpar + qnorm(1 - dalpha) * vse
+  )
+}
+#' Tidy an hintreg object
+#'
+#' @param x an object of class "hintreg".
+#' @inheritParams tidy.intreg
+#' @return a tidy [tibble::tibble()] summarizing component-level information about the model.
+#' @examples
+#' lout <- hintreg(
+#'   q2 ~ sex,
+#'      ~ sex,
+#'      ~ sex,
+#'      ~ sex,
+#'   data       = ias2009febmay,
+#'   thresholds = c(-.5, .5, 1:5)
+#' )
+#' tidy(lout)
+#' @export
+tidy.hintreg <- function(lFit, conf.int = FALSE, conf.level = .95, ...) {
+  msummary <- summary(lFit)$summary |>
+    tibble::as_tibble(rownames = "term") |>
+    dplyr::rename(
+      estimate  = Estimate,
+      std.error = `Std. Error`,
+      statistic = `t value`,
+      p.value   = `Pr(>|t|)`
+    )
+  msummary <- tibble::tibble(
+    coef.type = c(
+      rep("location", length(lFit$coefL)),
+      rep("scale", length(lFit$coefS)),
+      rep("lower", length(lFit$coefLower)),
+      rep("upper", length(lFit$coefUpper))
+    ),
+    msummary
+  )
+  if (conf.int) {
+    mci      <- confint.hintreg(lFit, level = conf.level)
+    msummary <- dplyr::left_join(msummary, mci, by = c("coef.type", "term"))
+  }
+  msummary
+}
+confint.hintreg <- function(lFit, level = .95, ...) {
+  vbeta    <- lFit$coefL
+  vdelta   <- lFit$coefS
+  vlambda  <- lFit$coefLower
+  vupsilon <- lFit$coefUpper
+  mhess    <- lFit$hess
+  vpar     <- c(vbeta, vdelta, vlambda, vupsilon)
+  mcov     <- solve(mhess)
+  vse      <- sqrt(diag(mcov))
+  dalpha   <- (1 - level) / 2
+  tibble::tibble(
+    coef.type = c(
+      rep("location", length(lFit$coefL)),
+      rep("scale", length(lFit$coefS)),
+      rep("lower", length(lFit$coefLower)),
+      rep("upper", length(lFit$coefUpper))
+    ),
     term      = names(vpar),
     conf.low  = vpar + qnorm(dalpha) * vse,
     conf.high = vpar + qnorm(1 - dalpha) * vse
