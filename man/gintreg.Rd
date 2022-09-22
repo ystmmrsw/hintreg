@@ -4,7 +4,7 @@
 \alias{gintreg}
 \title{Fit a generalized normal interval regression model to interval data}
 \usage{
-gintreg(location, scale, data, start, weights, thresholds)
+gintreg(location, scale, data, start, weights, thresholds, ...)
 }
 \arguments{
 \item{location}{an object of class "formula"

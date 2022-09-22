@@ -22,6 +22,19 @@
 #' @inheritParams intreg
 #' @inheritParams gintreg
 #' @return an object of class "hintreg"
+#' @examples
+#' hintreg(
+#'   q2 ~ sex,
+#'      ~ sex,
+#'      ~ sex,
+#'      ~ sex,
+#'   data        = ias2009febmay,
+#'   start       = vstart,
+#'   threshbelow = NULL,
+#'   threshabove = 1:5,
+#'   limenlb     = -2,
+#'   limenub     = 1
+#' )
 #' @export
 hintreg <- function(
   location,
@@ -34,7 +47,8 @@ hintreg <- function(
   threshbelow,
   threshabove,
   limenlb,
-  limenub
+  limenub,
+  ...
 ) {
   cl <- match.call(expand.dots = FALSE)
   m  <- match(c("location", "data", "weights", "offset"), names(cl), 0)
@@ -110,7 +124,7 @@ hintreg <- function(
   }
   lout <- hintreg.fit(
     vy, mx, mz, mu, mv, vw,
-    voffsetL, voffsetS, voffsetLB, voffsetUB, vthresh, dlimenlb, dlimenub, vstart
+    voffsetL, voffsetS, voffsetLB, voffsetUB, vthresh, dlimenlb, dlimenub, vstart, ...
   )
   vtheta          <- lout$par
   mhess           <- lout$hessian
@@ -144,7 +158,7 @@ hintreg <- function(
 }
 hintreg.fit <- function(
   vY, mX, mZ, mU, mV, vW,
-  vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub, vStart
+  vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub, vStart, ...
 ) {
   optim(
     vStart,
@@ -153,7 +167,7 @@ hintreg.fit <- function(
       vY, mX, mZ, mU, mV, vW,
       vOffsetL, vOffsetS, vOffsetLB, vOffsetUB, vThresh, dLimenlb, dLimenub
     ),
-    method  = "BFGS",
+    method  = ...,
     hessian = TRUE
   )
 }

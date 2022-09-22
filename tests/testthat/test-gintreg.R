@@ -44,7 +44,8 @@ logLik_gintreg <- function(location, scale) {
     location,
     scale,
     data       = mData,
-    thresholds = vC
+    thresholds = vC,
+    method     = "BFGS"
   )$logLik
 }
 test_that("compare loglikelihoods of oglmx and gintreg", {
@@ -107,12 +108,28 @@ oglmx::oglmx(
   weights     = vW,
   threshparam = vC
 ) |> summary()
-lout <- gintreg(
+gintreg(
   y ~ d + x,
     ~ d + x,
   data       = mData,
   weights    = vW,
   thresholds = vC
-)
-summary(lout)
-tidy(lout, TRUE)
+) |> summary()
+
+# Comparison of alternative methods
+
+list("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN") |>
+  lapply(function(.) gintreg(
+    y ~ d + x,
+      ~ d + x,
+    data       = mData,
+    start      = vstart,
+    thresholds = vC,
+    method     = .
+  ) |> summary())
+gintreg(
+  y ~ d + x,
+    ~ d + x,
+  data       = mData,
+  thresholds = vC
+) |> broom::tidy()

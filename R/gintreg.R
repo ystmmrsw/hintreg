@@ -20,7 +20,7 @@
 #'   thresholds = c(-.5, .5, 1:5)
 #' )
 #' @export
-gintreg <- function(location, scale, data, start, weights, thresholds) {
+gintreg <- function(location, scale, data, start, weights, thresholds, ...) {
   cl <- match.call(expand.dots = FALSE)
   m  <- match(c("location", "data", "weights", "offset"), names(cl), 0)
   mf <- cl[c(1, m)]
@@ -59,7 +59,7 @@ gintreg <- function(location, scale, data, start, weights, thresholds) {
   } else {
     vstart <- start
   }
-  lout            <- gintreg.fit(vy, mx, mz, vw, voffsetL, voffsetS, vthresh, vstart)
+  lout            <- gintreg.fit(vy, mx, mz, vw, voffsetL, voffsetS, vthresh, vstart, ...)
   vtheta          <- lout$par
   mhess           <- lout$hessian
   vbeta           <- vtheta[seq_len(ck)]
@@ -80,11 +80,11 @@ gintreg <- function(location, scale, data, start, weights, thresholds) {
   class(lfit) <- "gintreg"
   lfit
 }
-gintreg.fit <- function(vY, mX, mZ, vW, vOffsetL, vOffsetS, vThresh, vStart) {
+gintreg.fit <- function(vY, mX, mZ, vW, vOffsetL, vOffsetS, vThresh, vStart, ...) {
   optim(
     vStart,
     function(vTheta) -gintreg.loglikelihood(vTheta, vY, mX, mZ, vW, vOffsetL, vOffsetS, vThresh),
-    method  = "BFGS",
+    method  = ...,
     hessian = TRUE
   )
 }

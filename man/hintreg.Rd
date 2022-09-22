@@ -15,7 +15,8 @@ hintreg(
   threshbelow,
   threshabove,
   limenlb,
-  limenub
+  limenub,
+  ...
 )
 }
 \arguments{
@@ -59,4 +60,18 @@ The dependent variable must be a factor representing J + 1 intervals.
 The user must provide thresholds below and above 0, respectively,
 expect for an indifference limen (so there must be J - 2 known thresholds),
 and lower and upper bounds on the heterogeneous indifference limen.
+}
+\examples{
+hintreg(
+  q2 ~ sex,
+     ~ sex,
+     ~ sex,
+     ~ sex,
+  data        = ias2009febmay,
+  start       = vstart,
+  threshbelow = NULL,
+  threshabove = 1:5,
+  limenlb     = -2,
+  limenub     = 1
+)
 }

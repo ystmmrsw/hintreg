@@ -9,6 +9,7 @@
 #' @param start an optional vector of starting values for the parameters.
 #' @param weights an optional vector of weights.
 #' @param thresholds a vector of J thresholds when there are J + 1 intervals.
+#' @param method the optimization method to be used for \code{\link{optim}}.
 #' @return an object of class "intreg"
 #' @examples
 #' intreg(
@@ -17,7 +18,7 @@
 #'   thresholds = c(-.5, .5, 1:5)
 #' )
 #' @export
-intreg <- function(formula, data, start, weights, thresholds) {
+intreg <- function(formula, data, start, weights, thresholds, ...) {
   mf      <- match.call(expand.dots = FALSE)
   m       <- match(c("formula", "data", "weights", "offset"), names(mf), 0)
   mf      <- mf[c(1, m)]
@@ -40,7 +41,7 @@ intreg <- function(formula, data, start, weights, thresholds) {
   } else {
     vstart <- start
   }
-  lout            <- intreg.fit(vy, mx, vw, voffset, vthresh, vstart)
+  lout            <- intreg.fit(vy, mx, vw, voffset, vthresh, vstart, ...)
   vtheta          <- lout$par
   mhess           <- lout$hessian
   vbeta           <- vtheta[seq_len(ck)]
@@ -61,11 +62,11 @@ intreg <- function(formula, data, start, weights, thresholds) {
   class(lfit) <- "intreg"
   lfit
 }
-intreg.fit <- function(vY, mX, vW, vOffset, vThresh, vStart) {
+intreg.fit <- function(vY, mX, vW, vOffset, vThresh, vStart, ...) {
   optim(
     vStart,
     function(.) -intreg.loglikelihood(., vY, mX, vW, vOffset, vThresh),
-    method  = "BFGS",
+    ...,
     hessian = TRUE
   )
 }

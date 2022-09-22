@@ -4,7 +4,7 @@
 \alias{intreg}
 \title{Fit a normal interval regression model to interval data}
 \usage{
-intreg(formula, data, start, weights, thresholds)
+intreg(formula, data, start, weights, thresholds, ...)
 }
 \arguments{
 \item{formula}{an object of class "formula".}
@@ -16,6 +16,8 @@ intreg(formula, data, start, weights, thresholds)
 \item{weights}{an optional vector of weights.}
 
 \item{thresholds}{a vector of J thresholds when there are J + 1 intervals.}
+
+\item{method}{the optimization method to be used for \code{\link{optim}}.}
 }
 \value{
 an object of class "intreg"

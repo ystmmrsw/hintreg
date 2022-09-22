@@ -61,7 +61,8 @@ logLik_hintreg <- function(location, scale) {
     threshbelow = vC_l,
     threshabove = vC_u,
     limenlb     = dLimenlb,
-    limenub     = dLimenub
+    limenub     = dLimenub,
+    method      = "BFGS"
   )$logLik
 }
 test_that("compare loglikelihoods of oglmx and hintreg", {
@@ -75,7 +76,7 @@ test_that("compare loglikelihoods of oglmx and hintreg", {
 
 oglmx::oglmx(
   y ~ d + x,
-  ~ d + x,
+    ~ d + x,
   data        = mData,
   beta        = c(NA, NA, 2),
   delta       = c(NA, NA, 2),
@@ -83,7 +84,7 @@ oglmx::oglmx(
 ) |> summary()
 hintreg(
   y ~ d + offset(2 * x),
-  ~ d + offset(2 * x),
+    ~ d + offset(2 * x),
   data        = mData,
   threshbelow = vC_l,
   threshabove = vC_u,
@@ -95,7 +96,7 @@ hintreg(
 
 lout <- gintreg(
   y ~ d + x,
-  ~ d + x,
+    ~ d + x,
   data       = mData,
   thresholds = c(vC_l, -.5, .5, vC_u)
 )
@@ -105,14 +106,14 @@ vstart       <- c(vbeta, vdelta, -.5, .5)
 #vstart       <- c(vBeta, vDelta, -.5, .5)
 oglmx::oglmx(
   y ~ d + x,
-  ~ d + x,
+    ~ d + x,
   data        = mData,
   start       = vstart,
   threshparam = c(vC_l, NA, NA, vC_u)
 ) |> summary()
 hintreg(
   y ~ d + x,
-  ~ d + x,
+    ~ d + x,
   data        = mData,
   start       = vstart,
   threshbelow = vC_l,
@@ -126,14 +127,14 @@ hintreg(
 vW <- rexp(cN)
 oglmx::oglmx(
   y ~ d + x,
-  ~ d + x,
+    ~ d + x,
   data        = mData,
   weights     = vW,
   threshparam = c(vC_l, NA, NA, vC_u)
 ) |> summary()
 hintreg(
   y ~ d + x,
-  ~ d + x,
+    ~ d + x,
   data        = mData,
   weights     = vW,
   threshbelow = vC_l,
@@ -142,18 +143,32 @@ hintreg(
   limenub     = dLimenub
 ) |> summary()
 
-# Heterogenenous interval regression
+# Comparison of alternative methods
 
-lout <- hintreg(
+list("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN") |>
+  lapply(function(.) hintreg(
+    y ~ d + x,
+      ~ d + x,
+    data        = mData,
+    start       = vstart,
+    threshbelow = vC_l,
+    threshabove = vC_u,
+    limenlb     = dLimenlb,
+    limenub     = dLimenub,
+    method      = .
+  ) |> summary())
+
+# Heterogenous indifference limen
+
+hintreg(
   y ~ d + x,
-  ~ d + x,
-  ~ d + x,
-  ~ d + x,
+    ~ d + x,
+    ~ d + x,
+    ~ d + x,
   data        = mData,
   threshbelow = vC_l,
   threshabove = vC_u,
   limenlb     = dLimenlb,
-  limenub     = dLimenub
-)
-summary(lout)
-tidy(lout, TRUE)
+  limenub     = dLimenub,
+  method      = "BFGS"
+) |> broom::tidy(conf.int = TRUE)

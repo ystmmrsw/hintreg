@@ -88,11 +88,25 @@ oglmx::oglmx(
   weights     = vW,
   threshparam = vC
 ) |> summary()
-lout <- intreg(
+intreg(
   y ~ d + x,
   data       = mData,
   weights    = vW,
   thresholds = vC
-)
-summary(lout)
-tidy(lout, TRUE)
+) |> summary()
+
+# Comparison of alternative methods
+
+list("Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN") |>
+  lapply(function(.) intreg(
+    y ~ d + x,
+    data       = mData,
+    start      = vstart,
+    thresholds = vC,
+    method = .
+  ) |> summary())
+intreg(
+  y ~ d + x,
+  data       = mData,
+  thresholds = vC
+) |> broom::tidy()
