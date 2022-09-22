@@ -27,10 +27,10 @@ output:
     toc: yes
 papersize: a4
 vignette: >
-  %\VignetteIndexEntry{**hintreg**:
   An R package for fitting a heterogeneous normal interval regression model
   to interval data with an indifference limen}
   %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{**hintreg**:
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -238,7 +238,8 @@ hintreg(
   threshbelow,
   threshabove,
   limenlb,
-  limenub
+  limenub,
+  ...
 )
 ```
 
@@ -294,8 +295,11 @@ and **limenub** must be positive
 and no greater than **min(threshabove)**.
 
 Internally,
-**hintreg()** maximizes the log-likelihood function using **optim()**,
-where we use the BFGS method and numerical derivatives for the gradients.
+\texttt{hintreg()} maximizes the log-likelihood function
+using \texttt{optim()}.
+One can specify the optional arguments for \texttt{optim()}
+in \texttt{hintreg()},
+if desired.
 
 # An illustration
 
@@ -363,7 +367,8 @@ as follows:
 intreg(
   q2 ~ age + work + sex + educ + tenure,
   data       = ias2009febmay,
-  thresholds = c(-.5, .5, 1:5)
+  thresholds = c(-.5, .5, 1:5),
+  method     = "BFGS"
 ) |> summary()
 ```
 
@@ -383,7 +388,8 @@ interested readers can try including more explanatory variables by themselves.
 lout <- intreg(
   q2 ~ sex,
   data       = ias2009febmay,
-  thresholds = c(-.5, .5, 1:5)
+  thresholds = c(-.5, .5, 1:5),
+  method     = "BFGS"
 )
 summary(lout)
 ```
@@ -429,7 +435,8 @@ lout <- gintreg(
      ~ sex,
   data       = ias2009febmay,
   start      = vstart,
-  thresholds = c(-.5, .5, 1:5)
+  thresholds = c(-.5, .5, 1:5),
+  method     = "BFGS"
 )
 summary(lout)
 ```
@@ -487,7 +494,8 @@ lout <- hintreg(
   threshbelow = NULL,
   threshabove = 1:5,
   limenlb     = -1,
-  limenub     = 1
+  limenub     = 1,
+  method      = "BFGS"
 )
 summary(lout)
 ```
@@ -516,7 +524,8 @@ lout <- hintreg(
   threshbelow = NULL,
   threshabove = 1:5,
   limenlb     = -2,
-  limenub     = 1
+  limenub     = 1,
+  method      = "BFGS"
 )
 summary(lout)
 ```
@@ -577,7 +586,8 @@ hintreg(
   threshbelow = NULL,
   threshabove = 1:5,
   limenlb     = -2,
-  limenub     = 1
+  limenub     = 1,
+  method      = "BFGS"
 ) |> summary()
 ```
 
